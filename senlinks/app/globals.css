@@ -1,16 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #1E3A8A;
-  --color-primary-hover: #1E40AF;
-  --color-danger: #B91C1C;
-  --color-danger-hover: #991B1B;
-  --color-background: #FFFFFF;
-  --color-text: #111827;
-  --color-text-muted: #6B7280;
-  --color-border: #E5E7EB;
-  --color-surface: #F9FAFB;
-  --color-surface-hover: #F3F4F6;
+  --color-ink:          #111827;
+  --color-paper:        #FFFFFF;
+  --color-navy:         #1E3A8A;
+  --color-navy-deep:    #15296B;
+  --color-coral:        #FF5A5F;
+  --color-mint:         #1FAE7A;
+  --color-amber:        #F5A623;
+  --color-danger:       #B91C1C;
+  --color-border:       #E5E7EB;
+  --color-surface:      #F9FAFB;
+  --color-muted:        #6B7280;
+
+  /* Legacy aliases */
+  --color-primary:      #1E3A8A;
+  --color-primary-hover:#15296B;
 }
 
 *, *::before, *::after {
@@ -24,7 +29,17 @@ html, body {
 body {
   background-color: #FFFFFF;
   color: #111827;
-  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Reduced-motion: disable tilt / stagger, keep fades */
+@media (prefers-reduced-motion: reduce) {
+  .chip-animate,
+  .stagger-section {
+    animation: none !important;
+    transition: opacity 0.3s ease !important;
+    transform: none !important;
+  }
 }
