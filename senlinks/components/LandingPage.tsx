@@ -4,11 +4,11 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
-  Instagram,
+  Globe,
   ShoppingBag,
   BarChart3,
   Mail,
-  Youtube,
+  Play,
   ArrowRight,
 } from "lucide-react";
 import gsap from "gsap";
@@ -31,11 +31,11 @@ interface ChipDef {
 }
 
 const CHIPS: ChipDef[] = [
-  { Icon: Instagram,   label: "Instagram",  color: "coral", scatter: { x: 18,  y: -25, r: -14 } },
+  { Icon: Globe,       label: "Instagram",  color: "coral", scatter: { x: 18,  y: -25, r: -14 } },
   { Icon: ShoppingBag, label: "My Shop",    color: "amber", scatter: { x: -22, y: -8,  r: 11  } },
   { Icon: BarChart3,   label: "Portfolio",  color: "mint",  scatter: { x: 14,  y:  8,  r: -7  } },
   { Icon: Mail,        label: "Newsletter", color: "navy",  scatter: { x: -18, y: 18,  r: 9   } },
-  { Icon: Youtube,     label: "YouTube",    color: "coral", scatter: { x: 10,  y:  28, r: -4  } },
+  { Icon: Play,        label: "YouTube",    color: "coral", scatter: { x: 10,  y:  28, r: -4  } },
 ];
 
 // ─── Mock panel data ──────────────────────────────────────────────────────────
