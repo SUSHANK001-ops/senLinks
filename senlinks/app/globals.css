@@ -34,7 +34,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Reduced-motion: disable tilt / stagger, keep fades */
+/* ── Font utilities ───────────────────────────────────────────────────────── */
+/* Wires Next.js font CSS variables into usable classes */
+.font-display {
+  font-family: var(--font-display), "Space Grotesk", system-ui, sans-serif;
+}
+
+/* ── Nav landing scroll border ───────────────────────────────────────────── */
+.nav-landing {
+  border-bottom: 1px solid transparent;
+  transition: border-color 150ms ease;
+}
+.nav-landing.scrolled {
+  border-bottom-color: #E5E7EB;
+}
+
+/* ── Reduced-motion: disable tilt / stagger, keep fades ─────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .chip-animate,
   .stagger-section {
