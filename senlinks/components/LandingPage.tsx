@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -59,6 +59,11 @@ export default function LandingPage() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const panelRefs  = useRef<(HTMLDivElement | null)[]>([]);
   const navRef     = useRef<HTMLElement>(null);
+  const [host, setHost] = useState("senlinks.app");
+
+  useEffect(() => {
+    setHost(window.location.host);
+  }, []);
 
   // Chip scatter → settle + cursor tilt
   useEffect(() => {
@@ -86,38 +91,52 @@ export default function LandingPage() {
 
     if (reduced || !heroRef.current) return;
 
-    // Cursor tilt
+    // Cursor tilt with lerp smoothing
     const hero = heroRef.current;
-    const quickTos = chipRefs.current.map((chip) =>
+    const setters = chipRefs.current.map((chip) =>
       chip
         ? {
-            ry: gsap.quickTo(chip, "rotateY", { duration: 0.4, ease: "power1.out" }),
-            rx: gsap.quickTo(chip, "rotateX", { duration: 0.4, ease: "power1.out" }),
+            ry: gsap.quickSetter(chip, "rotateY", "deg"),
+            rx: gsap.quickSetter(chip, "rotateX", "deg"),
           }
         : null
     );
 
+    // Current smoothed values per chip
+    const current = chipRefs.current.map(() => ({ rx: 0, ry: 0 }));
+    let target = { dx: 0, dy: 0 };
+    let rafId = 0;
+    const LERP = 0.1;
+
+    const tick = () => {
+      setters.forEach((qt, i) => {
+        if (!qt) return;
+        const deg = 12 + (i % 3) * 3; // 12–18°
+        const targetRy = target.dx * deg;
+        const targetRx = -target.dy * deg;
+        current[i].ry += (targetRy - current[i].ry) * LERP;
+        current[i].rx += (targetRx - current[i].rx) * LERP;
+        qt.ry(current[i].ry);
+        qt.rx(current[i].rx);
+      });
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+
     const onMove = (e: MouseEvent) => {
       const rect = hero.getBoundingClientRect();
-      const dx = (e.clientX - (rect.left + rect.width  / 2)) / (rect.width  / 2);
-      const dy = (e.clientY - (rect.top  + rect.height / 2)) / (rect.height / 2);
-      quickTos.forEach((qt, i) => {
-        if (!qt) return;
-        const deg = 3 + (i % 3); // 3–5°
-        qt.ry(dx * deg);
-        qt.rx(-dy * deg);
-      });
+      target.dx = (e.clientX - (rect.left + rect.width  / 2)) / (rect.width  / 2);
+      target.dy = (e.clientY - (rect.top  + rect.height / 2)) / (rect.height / 2);
     };
 
     const onLeave = () => {
-      chipRefs.current.forEach((chip) => {
-        if (chip) gsap.to(chip, { rotateX: 0, rotateY: 0, duration: 0.4 });
-      });
+      target = { dx: 0, dy: 0 };
     };
 
     hero.addEventListener("mousemove", onMove);
     hero.addEventListener("mouseleave", onLeave);
     return () => {
+      cancelAnimationFrame(rafId);
       hero.removeEventListener("mousemove", onMove);
       hero.removeEventListener("mouseleave", onLeave);
     };
@@ -213,7 +232,7 @@ export default function LandingPage() {
               className="inline-flex items-center gap-1 mb-8 px-3 py-1.5 bg-surface border border-border rounded text-xs text-muted"
               style={{ fontFamily: "var(--font-mono), ui-monospace, monospace" }}
             >
-              senlinks.sushanka.com.np/
+              {host}/
               <span className="text-navy font-medium">yourname</span>
             </div>
 
