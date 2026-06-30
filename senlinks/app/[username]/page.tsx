@@ -93,8 +93,6 @@ export default async function PublicProfilePage({ params }: Props) {
             <div className="mt-4">
               <SocialIconRow
                 icons={user.socialIcons}
-                onDelete={() => {}}
-                onAdd={async () => {}}
                 isAdmin={false}
               />
             </div>

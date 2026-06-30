@@ -4,9 +4,42 @@ import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import { createId } from "@paralleldrive/cuid2";
+
+/** Build a temporary unique username from the OAuth display name */
+function tempUsername(name: string | null | undefined, email: string | null | undefined): string {
+  const base =
+    name
+      ?.toLowerCase()
+      .replace(/[^a-z0-9]/g, "")
+      .slice(0, 15) ||
+    email?.split("@")[0]?.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 15) ||
+    "user";
+  // Append a short random suffix to ensure uniqueness
+  return `${base}_${createId().slice(0, 6)}`;
+}
+
+function buildAdapter() {
+  const base = PrismaAdapter(prisma);
+  return {
+    ...base,
+    // Intercept createUser to inject a username and map OAuth fields to our schema
+    async createUser(data: Parameters<typeof base.createUser>[0]) {
+      const username = tempUsername(data.name, data.email);
+      // Auth.js sends `image` and `emailVerified`, but our Prisma schema
+      // uses `avatarUrl` and has no `emailVerified` column.
+      const { image, emailVerified, ...rest } = data as Record<string, unknown>;
+      return base.createUser({
+        ...rest,
+        username,
+        avatarUrl: (image as string) ?? null,
+      } as Parameters<typeof base.createUser>[0]);
+    },
+  };
+}
 
 const config: NextAuthConfig = {
-  adapter: PrismaAdapter(prisma),
+  adapter: buildAdapter(),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -31,22 +64,6 @@ const config: NextAuthConfig = {
           dbUser?.username ?? "";
       }
       return session;
-    },
-    async redirect({ url, baseUrl }) {
-      if (url.startsWith(baseUrl)) return url;
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      return baseUrl;
-    },
-  },
-  events: {
-    // After PrismaAdapter creates the user, mark them as needing onboarding
-    // by temporarily storing the auto-generated cuid as username.
-    // The /onboarding page will let the user pick a real one.
-    async createUser({ user }) {
-      // username already has a cuid default from schema — nothing to do here.
-      // The session callback will expose it; onboarding page checks if it looks
-      // like a cuid (starts with 'c' and is long) to redirect appropriately.
-      void user;
     },
   },
 };

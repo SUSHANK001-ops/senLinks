@@ -43,8 +43,8 @@ function getPlatformIcon(platform: string) {
 
 interface SocialIconRowProps {
   icons: SocialIcon[];
-  onDelete: (id: string) => void;
-  onAdd: (platform: string, url: string) => Promise<void>;
+  onDelete?: (id: string) => void;
+  onAdd?: (platform: string, url: string) => Promise<void>;
   isAdmin?: boolean;
 }
 
