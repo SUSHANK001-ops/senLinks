@@ -39,6 +39,12 @@ export default async function AdminLayout({
               >
                 Display
               </Link>
+              <Link
+                href="/admin/profile"
+                className="px-3 py-1.5 text-sm font-medium text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded transition-colors"
+              >
+                Profile
+              </Link>
             </nav>
           </div>
           <AdminNavClient session={session} />
@@ -62,9 +68,15 @@ export default async function AdminLayout({
           </Link>
           <Link
             href="/admin/display"
-            className="flex-1 py-3 text-center text-sm font-medium text-[#6B7280] hover:text-[#111827] transition-colors"
+            className="flex-1 py-3 text-center text-sm font-medium text-[#6B7280] hover:text-[#111827] border-r border-[#E5E7EB] transition-colors"
           >
             Display
+          </Link>
+          <Link
+            href="/admin/profile"
+            className="flex-1 py-3 text-center text-sm font-medium text-[#6B7280] hover:text-[#111827] transition-colors"
+          >
+            Profile
           </Link>
         </div>
       </div>
