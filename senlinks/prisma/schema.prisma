@@ -7,11 +7,12 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+ 
 }
 
 model User {
   id             String          @id @default(cuid())
-  username       String          @unique
+  username       String          @unique @default(cuid())
   email          String          @unique
   password       String? // null if OAuth-only
   name           String?

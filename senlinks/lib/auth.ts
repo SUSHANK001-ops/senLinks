@@ -4,8 +4,8 @@ import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
 
 /** Generate a unique username from a display name */
 async function generateUniqueUsername(baseName: string): Promise<string> {
@@ -74,23 +74,18 @@ const config: NextAuthConfig = {
       }
       return session;
     },
-    async signIn({ user, account }) {
-      if (account?.provider !== "credentials" && user.email) {
-        const existing = await prisma.user.findUnique({
-          where: { email: user.email },
-          select: { username: true },
+  },
+  events: {
+    async createUser({ user }) {
+      if (user.email) {
+        const username = await generateUniqueUsername(
+          user.name ?? user.email.split("@")[0]
+        );
+        await prisma.user.update({
+          where: { id: user.id! },
+          data: { username },
         });
-        if (!existing?.username) {
-          const username = await generateUniqueUsername(
-            user.name ?? user.email.split("@")[0]
-          );
-          await prisma.user.update({
-            where: { email: user.email },
-            data: { username },
-          });
-        }
       }
-      return true;
     },
   },
 };
