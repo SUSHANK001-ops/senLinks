@@ -39,7 +39,7 @@ export default async function PublicProfilePage({ params }: Props) {
         orderBy: { order: "asc" },
       },
       socialIcons: {
-        orderBy: { platform: "asc" },
+        orderBy: [{ order: "asc" }, { platform: "asc" }],
       },
     },
   });
@@ -88,9 +88,9 @@ export default async function PublicProfilePage({ params }: Props) {
             </p>
           )}
 
-          {/* Social icons */}
+          {/* Social icons — SocialIconRow handles icon vs button split internally */}
           {user.socialIcons.length > 0 && (
-            <div className="mt-4">
+            <div className="mt-4 w-full">
               <SocialIconRow
                 icons={user.socialIcons}
                 isAdmin={false}
