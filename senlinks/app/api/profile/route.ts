@@ -4,12 +4,15 @@ import { prisma } from "@/lib/prisma";
 
 const IMAGEKIT_HOST = "ik.imagekit.io";
 
-function isImageKitUrl(url: string): boolean {
+function isAllowedAvatarUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
+    const host = parsed.hostname;
     return (
-      parsed.hostname === IMAGEKIT_HOST ||
-      parsed.hostname.endsWith(`.${IMAGEKIT_HOST}`)
+      host === IMAGEKIT_HOST ||
+      host.endsWith(`.${IMAGEKIT_HOST}`) ||
+      host.endsWith("googleusercontent.com") ||
+      host.endsWith("githubusercontent.com")
     );
   } catch {
     return false;
@@ -72,7 +75,7 @@ export async function PATCH(req: Request) {
   if (avatarUrl !== undefined) {
     if (avatarUrl === "") {
       safeAvatarUrl = null; // allow clearing
-    } else if (isImageKitUrl(avatarUrl)) {
+    } else if (isAllowedAvatarUrl(avatarUrl)) {
       safeAvatarUrl = avatarUrl;
     } else {
       // Check if it matches their oauthAvatarUrl (import from provider)

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Link } from "@prisma/client";
+import EmojiPicker from "emoji-picker-react";
 
 interface AdminLinkFormProps {
   link?: Link;
@@ -27,6 +28,20 @@ export default function AdminLinkForm({
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -125,14 +140,35 @@ export default function AdminLinkForm({
             >
               Icon (emoji or text)
             </label>
-            <input
-              id="link-icon"
-              type="text"
-              value={icon}
-              onChange={(e) => setIcon(e.target.value)}
-              placeholder="e.g. 🔗"
-              className="w-full px-3 py-2 border border-[#E5E7EB] rounded text-[#111827] text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent"
-            />
+            <div className="relative" ref={emojiPickerRef}>
+              <div className="flex relative">
+                <input
+                  id="link-icon"
+                  type="text"
+                  value={icon}
+                  onChange={(e) => setIcon(e.target.value)}
+                  placeholder="e.g. 🔗"
+                  className="w-full pl-3 pr-10 py-2 border border-[#E5E7EB] rounded text-[#111827] text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#111827] text-lg"
+                >
+                  😀
+                </button>
+              </div>
+              {showEmojiPicker && (
+                <div className="absolute z-10 mt-1">
+                  <EmojiPicker
+                    onEmojiClick={(emojiData) => {
+                      setIcon(emojiData.emoji);
+                      setShowEmojiPicker(false);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

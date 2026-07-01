@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 
 export default function LoginContent() {
@@ -25,9 +26,10 @@ export default function LoginContent() {
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link
             href="/"
-            className="font-display text-lg font-bold text-[#1E3A8A] tracking-tight"
+            className="flex items-center gap-2"
           >
-            SenLinks
+            <Image src="/logo.gif" alt="SenLinks Logo" width={28} height={28} unoptimized />
+            <span className="font-display text-lg font-bold text-[#1E3A8A] tracking-tight">SenLinks</span>
           </Link>
           <span className="text-xs text-[#6B7280]">
             It&apos;s free —{" "}
@@ -46,10 +48,8 @@ export default function LoginContent() {
         <div className="w-full max-w-sm">
           {/* Logo mark */}
           <div className="flex justify-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-[#1E3A8A] flex items-center justify-center shadow-md">
-              <span className="text-white font-display font-bold text-xl">
-                S
-              </span>
+            <div className="w-16 h-16 rounded-xl bg-white flex items-center justify-center shadow-sm border border-[#E5E7EB]">
+              <Image src="/logo.gif" alt="SenLinks Logo" width={48} height={48} unoptimized />
             </div>
           </div>
 

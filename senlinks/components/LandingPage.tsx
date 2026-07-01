@@ -206,9 +206,12 @@ export default function LandingPage() {
       {/* ── Nav ──────────────────────────────────────────────────────────────── */}
       <nav ref={navRef} className="sticky top-0 z-50 bg-white nav-landing">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <span className="font-display text-xl font-bold text-navy tracking-tight">
-            SenLinks
-          </span>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.gif" alt="SenLinks Logo" width={32} height={32} unoptimized />
+            <span className="font-display text-xl font-bold text-navy tracking-tight">
+              SenLinks
+            </span>
+          </Link>
 
           {session?.user ? (
             /* ── Logged-in: avatar + dropdown ── */
@@ -301,6 +304,16 @@ export default function LandingPage() {
         >
           {/* Left: copy */}
           <div className="flex-1 min-w-0 lg:max-w-lg">
+            <div className="mb-6">
+              <Image 
+                src="/logowithtext.png" 
+                alt="SenLinks" 
+                width={240} 
+                height={80} 
+                className="w-auto h-16 sm:h-20"
+                priority
+              />
+            </div>
             <h1 className="font-display text-[clamp(2.25rem,5vw,5rem)] font-extrabold text-ink leading-[1.05] tracking-tight mb-6">
               One link.<br />
               <span className="text-navy">
