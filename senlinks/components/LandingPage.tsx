@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import type { LucideIcon } from "lucide-react";
 import {
   Globe,
@@ -12,6 +13,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import gsap from "gsap";
+import { useSession, signOut } from "next-auth/react";
 
 // ─── Chip data ────────────────────────────────────────────────────────────────
 type ChipColorKey = "coral" | "mint" | "amber" | "navy";
@@ -54,16 +56,31 @@ const PROFILE_LINKS = [
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function LandingPage() {
+  const { data: session } = useSession();
   const chipRefs   = useRef<(HTMLDivElement | null)[]>([]);
   const heroRef    = useRef<HTMLElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const panelRefs  = useRef<(HTMLDivElement | null)[]>([]);
   const navRef     = useRef<HTMLElement>(null);
-  const [host, setHost] = useState("senlinks.app");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [host, setHost]           = useState("senlinks.app");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     setHost(window.location.host);
   }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [dropdownOpen]);
 
   // Chip scatter → settle + cursor tilt
   useEffect(() => {
@@ -192,22 +209,85 @@ export default function LandingPage() {
           <span className="font-display text-xl font-bold text-navy tracking-tight">
             SenLinks
           </span>
-          <div className="flex items-center gap-3">
-            <Link
-              id="nav-login"
-              href="/login"
-              className="px-4 py-2 text-sm font-medium text-navy border border-navy rounded hover:bg-navy hover:text-white transition-colors duration-150"
-            >
-              Log in
-            </Link>
-            <Link
-              id="nav-signup"
-              href="/login?tab=signup"
-              className="px-4 py-2 text-sm font-semibold text-white bg-navy rounded hover:bg-navy-deep transition-colors duration-150"
-            >
-              Sign up
-            </Link>
-          </div>
+
+          {session?.user ? (
+            /* ── Logged-in: avatar + dropdown ── */
+            <div ref={dropdownRef} className="relative">
+              <button
+                id="nav-user-menu"
+                type="button"
+                onClick={() => setDropdownOpen((o) => !o)}
+                className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/40 transition"
+                aria-label="User menu"
+                aria-expanded={dropdownOpen}
+              >
+                {session.user.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={session.user.name ?? "avatar"}
+                    width={36}
+                    height={36}
+                    className="rounded-full border-2 border-[#E5E7EB] object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-[#1E3A8A] border-2 border-[#E5E7EB] flex items-center justify-center">
+                    <span className="text-white text-sm font-bold select-none">
+                      {(session.user.name ?? session.user.email ?? "?").charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </button>
+
+              {/* Dropdown */}
+              {dropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-[#E5E7EB] rounded-xl shadow-lg py-1 z-50">
+                  <div className="px-3 py-2 border-b border-[#F3F4F6]">
+                    <p className="text-xs font-semibold text-[#111827] truncate">
+                      {session.user.name ?? session.user.email}
+                    </p>
+                    {session.user.username && (
+                      <p className="text-[11px] text-[#6B7280] truncate">@{session.user.username}</p>
+                    )}
+                  </div>
+                  <Link
+                    id="nav-dashboard"
+                    href="/admin"
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-[#111827] hover:bg-[#F9FAFB] transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    id="nav-logout"
+                    type="button"
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#B91C1C] hover:bg-red-50 transition-colors"
+                  >
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* ── Logged-out: Login / Sign up ── */
+            <div className="flex items-center gap-3">
+              <Link
+                id="nav-login"
+                href="/login"
+                className="px-4 py-2 text-sm font-medium text-navy border border-navy rounded hover:bg-navy hover:text-white transition-colors duration-150"
+              >
+                Log in
+              </Link>
+              <Link
+                id="nav-signup"
+                href="/login"
+                className="px-4 py-2 text-sm font-semibold text-white bg-navy rounded hover:bg-navy-deep transition-colors duration-150"
+              >
+                Sign up
+              </Link>
+            </div>
+          )}
         </div>
       </nav>
 
