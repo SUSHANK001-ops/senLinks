@@ -7,15 +7,21 @@ import { prisma } from "@/lib/prisma";
 import { createId } from "@paralleldrive/cuid2";
 
 /** Build a temporary unique username from the OAuth display name */
-function tempUsername(name: string | null | undefined, email: string | null | undefined): string {
+function tempUsername(
+  name: string | null | undefined,
+  email: string | null | undefined
+): string {
   const base =
     name
       ?.toLowerCase()
       .replace(/[^a-z0-9]/g, "")
       .slice(0, 15) ||
-    email?.split("@")[0]?.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 15) ||
+    email
+      ?.split("@")[0]
+      ?.toLowerCase()
+      .replace(/[^a-z0-9]/g, "")
+      .slice(0, 15) ||
     "user";
-  // Append a short random suffix to ensure uniqueness
   return `${base}_${createId().slice(0, 6)}`;
 }
 
@@ -23,16 +29,16 @@ function buildAdapter() {
   const base = PrismaAdapter(prisma);
   return {
     ...base,
-    // Intercept createUser to inject a username and map OAuth fields to our schema
+    // Intercept createUser to inject username + snapshot oauthAvatarUrl
     async createUser(data: Parameters<typeof base.createUser>[0]) {
       const username = tempUsername(data.name, data.email);
-      // Auth.js sends `image` and `emailVerified`, but our Prisma schema
-      // uses `avatarUrl` and has no `emailVerified` column.
       const { image, emailVerified, ...rest } = data as Record<string, unknown>;
       return base.createUser({
         ...rest,
         username,
+        usernameSet: false,
         avatarUrl: (image as string) ?? null,
+        oauthAvatarUrl: (image as string) ?? null,
       } as Parameters<typeof base.createUser>[0]);
     },
   };
@@ -50,7 +56,21 @@ const config: NextAuthConfig = {
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
   ],
-  session: { strategy: "database" },
+  session: {
+    strategy: "database",
+    maxAge: 7 * 24 * 60 * 60,   // 7 days
+    updateAge: 24 * 60 * 60,    // refresh once per day
+  },
+  cookies: {
+    sessionToken: {
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
   pages: { signIn: "/login" },
   callbacks: {
     async session({ session, user }) {
@@ -58,10 +78,11 @@ const config: NextAuthConfig = {
         session.user.id = user.id;
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { username: true },
+          select: { username: true, usernameSet: true, oauthAvatarUrl: true },
         });
-        (session.user as typeof session.user & { username: string }).username =
-          dbUser?.username ?? "";
+        session.user.username = dbUser?.username ?? "";
+        session.user.usernameSet = dbUser?.usernameSet ?? false;
+        session.user.oauthAvatarUrl = dbUser?.oauthAvatarUrl ?? null;
       }
       return session;
     },

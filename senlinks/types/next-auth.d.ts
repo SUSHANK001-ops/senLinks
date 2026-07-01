@@ -8,10 +8,14 @@ declare module "next-auth" {
       email?: string | null;
       image?: string | null;
       username?: string;
+      usernameSet?: boolean;
+      oauthAvatarUrl?: string | null;
     };
   }
 
   interface User {
     username?: string;
+    usernameSet?: boolean;
+    oauthAvatarUrl?: string | null;
   }
 }
