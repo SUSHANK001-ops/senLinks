@@ -13,11 +13,13 @@ datasource db {
 model User {
   id             String          @id @default(cuid())
   username       String          @unique @default(cuid())
+  usernameSet    Boolean         @default(false)
   email          String          @unique
   password       String? // null if OAuth-only
   name           String?
   bio            String?
   avatarUrl      String?
+  oauthAvatarUrl String? // immutable snapshot of provider avatar, set once at account creation
   links          Link[]
   socialIcons    SocialIcon[]
   accounts       Account[]
@@ -89,11 +91,13 @@ model ClickLog {
 }
 
 model SocialIcon {
-  id       String @id @default(cuid())
-  platform String
-  url      String
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String @id @default(cuid())
+  platform     String
+  url          String
+  displayStyle String @default("icon") // "icon" | "button"
+  order        Int    @default(0)
+  userId       String
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Covered in detail in Part 2 — declared here since it belongs to base schema
