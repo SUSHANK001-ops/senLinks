@@ -30,16 +30,18 @@ function buildAdapter() {
   return {
     ...base,
     // Intercept createUser to inject username + snapshot oauthAvatarUrl
-    async createUser(data: Parameters<typeof base.createUser>[0]) {
+    async createUser(data: Parameters<NonNullable<typeof base.createUser>>[0]) {
       const username = tempUsername(data.name, data.email);
-      const { image, emailVerified, ...rest } = data as Record<string, unknown>;
-      return base.createUser({
+      // AdapterUser doesn't have an index signature, go through unknown
+      const raw = data as unknown as Record<string, unknown>;
+      const { image, emailVerified, ...rest } = raw;
+      return base.createUser!({
         ...rest,
         username,
         usernameSet: false,
         avatarUrl: (image as string) ?? null,
         oauthAvatarUrl: (image as string) ?? null,
-      } as Parameters<typeof base.createUser>[0]);
+      } as unknown as Parameters<NonNullable<typeof base.createUser>>[0]);
     },
   };
 }

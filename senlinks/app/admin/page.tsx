@@ -90,11 +90,11 @@ export default function AdminPage() {
     setLinks((prev) => prev.filter((l) => l.id !== id));
   }
 
-  async function handleAddSocial(platform: string, url: string) {
+  async function handleAddSocial(platform: string, url: string, displayStyle: string = "icon") {
     const res = await fetch("/api/social", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ platform, url }),
+      body: JSON.stringify({ platform, url, displayStyle }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
