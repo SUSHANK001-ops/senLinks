@@ -110,15 +110,17 @@ export default async function PublicProfilePage({ params }: Props) {
               <a
                 key={link.id}
                 href={`/api/click/${link.id}`}
-                className="flex items-center gap-3 w-full px-5 py-4 border border-[#E5E7EB] rounded bg-white hover:bg-[#F9FAFB] hover:border-[#1E3A8A] transition-colors group"
+                className="flex items-center gap-3 w-full px-5 py-4 border border-[#E5E7EB] rounded-xl bg-white hover:bg-[#EEF2FF] hover:border-[#1E3A8A] hover:shadow-md transition-all group relative overflow-hidden"
               >
+                {/* Left accent bar */}
+                <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#1E3A8A] rounded-l-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 {link.icon && (
-                  <span className="text-lg flex-shrink-0">{link.icon}</span>
+                  <span className="text-lg flex-shrink-0 ml-1">{link.icon}</span>
                 )}
-                <span className="flex-1 text-sm font-medium text-[#111827] group-hover:text-[#1E3A8A] transition-colors text-center">
+                <span className="flex-1 text-sm font-semibold text-[#111827] group-hover:text-[#1E3A8A] transition-colors text-center">
                   {link.title}
                 </span>
-                <span className="flex-shrink-0 text-[#6B7280] group-hover:text-[#1E3A8A] transition-colors">
+                <span className="flex-shrink-0 text-[#9CA3AF] group-hover:text-[#1E3A8A] transition-colors">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="14"
@@ -141,12 +143,15 @@ export default async function PublicProfilePage({ params }: Props) {
         )}
 
         {/* Footer */}
-        <div className="mt-12 text-center">
+        <div className="mt-14 pt-6 border-t border-[#F3F4F6] text-center">
           <a
             href="/"
-            className="text-xs text-[#6B7280] hover:text-[#1E3A8A] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-[#9CA3AF] hover:text-[#1E3A8A] transition-colors group"
           >
-            Powered by <span className="font-semibold text-[#1E3A8A]">SenLinks</span>
+            <span>Powered by</span>
+            <span className="font-bold text-[#1E3A8A] group-hover:underline">SenLinks</span>
+            <span className="text-[#E5E7EB]">·</span>
+            <span>Create your own free page</span>
           </a>
         </div>
       </div>

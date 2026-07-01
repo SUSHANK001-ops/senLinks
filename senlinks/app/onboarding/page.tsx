@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FiCheck, FiX, FiLoader, FiArrowLeft } from "react-icons/fi";
+import Image from "next/image";
 
 type Status = "idle" | "checking" | "available" | "taken" | "invalid";
 type Step = "pick" | "confirm";
@@ -28,7 +29,8 @@ export default function OnboardingPage() {
   const [saveError, setSaveError] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const host = typeof window !== "undefined" ? window.location.host : "senlinks.app";
+  const host =
+    typeof window !== "undefined" ? window.location.host : "senlinks.app";
 
   // Pre-fill from user's display name
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function OnboardingPage() {
     }
   }, [session?.user?.name]);
 
-  // Redirect if already has a real username (not a temp cuid)
+  // Redirect if already has a real username
   useEffect(() => {
     const u = (session?.user as { username?: string })?.username;
     if (u && !(u.startsWith("c") && u.length >= 20)) {
@@ -48,17 +50,32 @@ export default function OnboardingPage() {
 
   // Debounced availability check
   useEffect(() => {
-    if (!username) { setCheckStatus("idle"); setCheckMsg(""); return; }
+    if (!username) {
+      setCheckStatus("idle");
+      setCheckMsg("");
+      return;
+    }
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setCheckStatus("checking");
     debounceRef.current = setTimeout(async () => {
-      const res = await fetch(`/api/auth/username?q=${encodeURIComponent(username)}`);
+      const res = await fetch(
+        `/api/auth/username?q=${encodeURIComponent(username)}`
+      );
       const data = await res.json();
-      if (data.error) { setCheckStatus("invalid"); setCheckMsg(data.error); }
-      else if (data.available) { setCheckStatus("available"); setCheckMsg("Username is available!"); }
-      else { setCheckStatus("taken"); setCheckMsg("Username is already taken."); }
+      if (data.error) {
+        setCheckStatus("invalid");
+        setCheckMsg(data.error);
+      } else if (data.available) {
+        setCheckStatus("available");
+        setCheckMsg("Username is available!");
+      } else {
+        setCheckStatus("taken");
+        setCheckMsg("Username is already taken.");
+      }
     }, 500);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [username]);
 
   async function handleConfirm() {
@@ -74,17 +91,18 @@ export default function OnboardingPage() {
     if (!res.ok) {
       setSaveError(data.error ?? "Something went wrong");
       setSaving(false);
-      setStep("pick"); // back to pick if error
+      setStep("pick");
       return;
     }
     await update();
     router.replace("/admin");
   }
 
+  // Loading state
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
-        <div className="h-8 w-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="h-8 w-8 border-2 border-[#E5E7EB] border-t-[#1E3A8A] rounded-full animate-spin" />
       </div>
     );
   }
@@ -96,158 +114,209 @@ export default function OnboardingPage() {
 
   const statusIcon = {
     idle: null,
-    checking: <FiLoader className="animate-spin text-white/40" size={16} />,
-    available: <FiCheck className="text-emerald-400" size={16} />,
-    taken: <FiX className="text-red-400" size={16} />,
-    invalid: <FiX className="text-red-400" size={16} />,
+    checking: <FiLoader className="animate-spin text-[#9CA3AF]" size={16} />,
+    available: <FiCheck className="text-[#1FAE7A]" size={16} />,
+    taken: <FiX className="text-[#B91C1C]" size={16} />,
+    invalid: <FiX className="text-[#B91C1C]" size={16} />,
   }[checkStatus];
 
   const borderColor = {
-    idle: "border-white/10",
-    checking: "border-white/20",
-    available: "border-emerald-500/60",
-    taken: "border-red-500/60",
-    invalid: "border-red-500/60",
+    idle: "border-[#E5E7EB]",
+    checking: "border-[#D1D5DB]",
+    available: "border-[#1FAE7A]",
+    taken: "border-[#B91C1C]",
+    invalid: "border-[#B91C1C]",
   }[checkStatus];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#0f172a] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {/* Avatar */}
-        <div className="flex justify-center mb-6">
-          {session.user?.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={session.user.image}
-              alt="avatar"
-              className="w-16 h-16 rounded-full ring-4 ring-violet-500/30"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-violet-600 flex items-center justify-center text-white text-2xl font-bold ring-4 ring-violet-500/30">
-              {session.user?.name?.[0]?.toUpperCase() ?? "?"}
-            </div>
-          )}
+    <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
+      {/* Top accent */}
+      <div className="h-1 bg-[#1E3A8A] w-full" />
+
+      {/* Nav */}
+      <header className="bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center">
+          <span className="font-display text-lg font-bold text-[#1E3A8A]">
+            SenLinks
+          </span>
         </div>
+      </header>
 
-        {/* Card */}
-        <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl opacity-20 blur-lg -z-10" />
-
-          {/* ── STEP 1: Pick username ── */}
-          {step === "pick" && (
-            <>
-              <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold text-white mb-1">Choose your username</h1>
-                <p className="text-sm text-white/50">
-                  Hey{session.user?.name ? `, ${session.user.name.split(" ")[0]}` : ""}! This will be your public profile URL.
-                </p>
+      {/* Content */}
+      <main className="flex-1 flex items-center justify-center px-4 py-16">
+        <div className="w-full max-w-sm">
+          {/* Avatar */}
+          <div className="flex justify-center mb-6">
+            {session.user?.image ? (
+              <Image
+                src={session.user.image}
+                alt="avatar"
+                width={64}
+                height={64}
+                className="rounded-full ring-4 ring-[#1E3A8A]/20 border-2 border-white shadow"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-[#1E3A8A] flex items-center justify-center text-white text-2xl font-bold shadow ring-4 ring-[#1E3A8A]/20">
+                {session.user?.name?.[0]?.toUpperCase() ?? "?"}
               </div>
+            )}
+          </div>
 
-              <div className="space-y-4">
-                {/* URL preview */}
-                <div className="bg-white/5 rounded-lg px-4 py-2.5 text-sm text-white/50 font-mono border border-white/10 truncate">
-                  {host}/
-                  <span className={username ? "text-violet-300" : "text-white/20"}>
-                    {username || "yourname"}
-                  </span>
-                </div>
-
-                {/* Input */}
-                <div className="relative">
-                  <input
-                    id="username-input"
-                    type="text"
-                    autoFocus
-                    autoComplete="off"
-                    value={username}
-                    onChange={(e) =>
-                      setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))
-                    }
-                    maxLength={20}
-                    placeholder="e.g. johndoe"
-                    className={`w-full px-4 py-3 pr-10 bg-white/5 border ${borderColor} rounded-xl text-white placeholder-white/20 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all`}
-                  />
-                  {statusIcon && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2">{statusIcon}</span>
-                  )}
-                </div>
-
-                {checkMsg && (
-                  <p className={`text-xs ${checkStatus === "available" ? "text-emerald-400" : "text-red-400"}`}>
-                    {checkMsg}
-                  </p>
-                )}
-                <p className="text-xs text-white/30">
-                  3–20 characters · lowercase letters, numbers, underscores only
-                </p>
-
-                <button
-                  id="check-username"
-                  type="button"
-                  disabled={checkStatus !== "available"}
-                  onClick={() => setStep("confirm")}
-                  className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-violet-500 hover:to-indigo-500 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                >
-                  Continue →
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* ── STEP 2: Confirm ── */}
-          {step === "confirm" && (
-            <>
-              <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold text-white mb-1">Confirm your username</h1>
-                <p className="text-sm text-white/50">
-                  Once set, you can change it later in your profile settings.
-                </p>
-              </div>
-
-              <div className="space-y-5">
-                {/* Confirmation card */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-center space-y-2">
-                  <p className="text-xs text-white/40 uppercase tracking-widest">Your public URL will be</p>
-                  <p className="text-lg font-bold text-white font-mono break-all">
-                    {host}/<span className="text-violet-400">{username}</span>
+          {/* Card */}
+          <div className="bg-white border border-[#E5E7EB] rounded-2xl p-8 shadow-sm">
+            {/* ── STEP 1: Pick username ── */}
+            {step === "pick" && (
+              <>
+                <div className="text-center mb-7">
+                  <h1 className="font-display text-2xl font-bold text-[#111827] mb-1">
+                    Choose your username
+                  </h1>
+                  <p className="text-sm text-[#6B7280]">
+                    Hey
+                    {session.user?.name
+                      ? `, ${session.user.name.split(" ")[0]}`
+                      : ""}
+                    ! This becomes your public profile URL.
                   </p>
                 </div>
 
-                {saveError && (
-                  <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-                    {saveError}
-                  </p>
-                )}
-
-                <button
-                  id="confirm-username"
-                  type="button"
-                  disabled={saving}
-                  onClick={handleConfirm}
-                  className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-violet-500 hover:to-indigo-500 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                >
-                  {saving ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="h-4 w-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                      Setting up your profile…
+                <div className="space-y-4">
+                  {/* URL preview */}
+                  <div className="bg-[#F9FAFB] rounded-lg px-4 py-2.5 text-sm text-[#6B7280] font-mono border border-[#E5E7EB] truncate">
+                    {host}/
+                    <span
+                      className={
+                        username ? "text-[#1E3A8A] font-semibold" : "text-[#D1D5DB]"
+                      }
+                    >
+                      {username || "yourname"}
                     </span>
-                  ) : (
-                    "✓ Confirm & Go to Dashboard"
-                  )}
-                </button>
+                  </div>
 
-                <button
-                  type="button"
-                  onClick={() => { setStep("pick"); setSaveError(""); }}
-                  className="w-full flex items-center justify-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors"
-                >
-                  <FiArrowLeft size={13} /> Change username
-                </button>
-              </div>
-            </>
-          )}
+                  {/* Input */}
+                  <div className="relative">
+                    <input
+                      id="username-input"
+                      type="text"
+                      autoFocus
+                      autoComplete="off"
+                      value={username}
+                      onChange={(e) =>
+                        setUsername(
+                          e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "")
+                        )
+                      }
+                      maxLength={20}
+                      placeholder="e.g. johndoe"
+                      className={`w-full px-4 py-3 pr-10 bg-white border-2 ${borderColor} rounded-xl text-[#111827] placeholder-[#D1D5DB] text-sm focus:outline-none transition-all`}
+                    />
+                    {statusIcon && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                        {statusIcon}
+                      </span>
+                    )}
+                  </div>
+
+                  {checkMsg && (
+                    <p
+                      className={`text-xs font-medium ${
+                        checkStatus === "available"
+                          ? "text-[#1FAE7A]"
+                          : "text-[#B91C1C]"
+                      }`}
+                    >
+                      {checkMsg}
+                    </p>
+                  )}
+                  <p className="text-xs text-[#9CA3AF]">
+                    3–20 chars · lowercase, numbers, underscores only
+                  </p>
+
+                  <button
+                    id="check-username"
+                    type="button"
+                    disabled={checkStatus !== "available"}
+                    onClick={() => setStep("confirm")}
+                    className="w-full py-3 bg-[#1E3A8A] text-white text-sm font-semibold rounded-xl hover:bg-[#15296B] active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow"
+                  >
+                    Continue →
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* ── STEP 2: Confirm ── */}
+            {step === "confirm" && (
+              <>
+                <div className="text-center mb-7">
+                  <h1 className="font-display text-2xl font-bold text-[#111827] mb-1">
+                    Confirm your username
+                  </h1>
+                  <p className="text-sm text-[#6B7280]">
+                    You can change this later in settings.
+                  </p>
+                </div>
+
+                <div className="space-y-5">
+                  {/* URL confirmation card */}
+                  <div className="bg-[#EEF2FF] border border-[#1E3A8A]/20 rounded-xl p-5 text-center space-y-1.5">
+                    <p className="text-[10px] font-semibold text-[#1E3A8A] uppercase tracking-widest">
+                      Your public URL
+                    </p>
+                    <p className="text-base font-bold text-[#111827] font-mono break-all">
+                      {host}/
+                      <span className="text-[#1E3A8A]">{username}</span>
+                    </p>
+                  </div>
+
+                  {saveError && (
+                    <p className="text-xs text-[#B91C1C] bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                      {saveError}
+                    </p>
+                  )}
+
+                  <button
+                    id="confirm-username"
+                    type="button"
+                    disabled={saving}
+                    onClick={handleConfirm}
+                    className="w-full py-3 bg-[#1E3A8A] text-white text-sm font-semibold rounded-xl hover:bg-[#15296B] active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow"
+                  >
+                    {saving ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Setting up your profile…
+                      </span>
+                    ) : (
+                      "✓ Confirm & Go to Dashboard"
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep("pick");
+                      setSaveError("");
+                    }}
+                    className="w-full flex items-center justify-center gap-1.5 text-sm text-[#6B7280] hover:text-[#111827] transition-colors"
+                  >
+                    <FiArrowLeft size={13} /> Change username
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-[#E5E7EB] bg-white py-5">
+        <div className="max-w-5xl mx-auto px-4 text-center">
+          <p className="text-xs text-[#9CA3AF]">
+            © {new Date().getFullYear()} SenLinks. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -422,12 +422,89 @@ export default function LandingPage() {
       </main>
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-border bg-white py-6">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="font-display text-sm font-bold text-navy">SenLinks</span>
-          <p className="text-xs text-muted">
-            © {new Date().getFullYear()} SenLinks · senlinks.sushanka.com.np
-          </p>
+      <footer className="border-t border-border bg-white">
+        {/* Main footer grid */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+          {/* Brand */}
+          <div className="lg:col-span-2">
+            <span className="font-display text-xl font-bold text-navy block mb-3">SenLinks</span>
+            <p className="text-sm text-muted leading-relaxed max-w-xs">
+              Your link-in-bio, beautifully simplified. Share everything you do
+              in one clean, trackable page.
+            </p>
+            <div className="flex items-center gap-1 mt-4 text-xs text-muted"
+              style={{ fontFamily: "var(--font-mono), ui-monospace, monospace" }}
+            >
+              <span className="text-navy font-medium">{host}/</span>
+              <span>yourname</span>
+            </div>
+          </div>
+
+          {/* Product links */}
+          <div>
+            <p className="text-[10px] font-semibold text-muted uppercase tracking-widest mb-4">Product</p>
+            <ul className="space-y-2.5">
+              {[
+                { label: "Features",   href: "/#features" },
+                { label: "Analytics",  href: "/#analytics" },
+                { label: "Sign up",    href: "/login?tab=signup" },
+                { label: "Log in",     href: "/login" },
+              ].map(({ label, href }) => (
+                <li key={label}>
+                  <Link
+                    href={href}
+                    className="text-sm text-muted hover:text-navy transition-colors"
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal links */}
+          <div>
+            <p className="text-[10px] font-semibold text-muted uppercase tracking-widest mb-4">Legal</p>
+            <ul className="space-y-2.5">
+              {[
+                { label: "Privacy Policy",   href: "/privacy" },
+                { label: "Terms of Service", href: "/terms" },
+                { label: "Contact",          href: "mailto:sushanka@example.com" },
+              ].map(({ label, href }) => (
+                <li key={label}>
+                  <Link
+                    href={href}
+                    className="text-sm text-muted hover:text-navy transition-colors"
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="border-t border-border">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-muted">
+              © {new Date().getFullYear()} SenLinks. Built by{" "}
+              <a
+                href="https://sushanka.com.np"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-navy hover:underline font-medium"
+              >
+                Sushanka
+              </a>
+              .
+            </p>
+            <div className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-[#1FAE7A] inline-block" />
+              <span className="text-xs text-muted">All systems operational</span>
+            </div>
+          </div>
         </div>
       </footer>
 
